@@ -21,7 +21,7 @@ io.on("connection", (socket) => {
     console.log("New client connected:", socket.id);
 
     socket.on("sendMessage", (data) => {
-        io.emit("receiveMessage", data); // Broadcast message to all
+         io.emit("message", msg); // Broadcast to all
     });
 
     socket.on("disconnect", () => {
