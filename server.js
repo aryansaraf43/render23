@@ -1,35 +1,20 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-require("dotenv").config();
-
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
+const io = socketIo(server, { cors: { origin: "*" } });
 
-// 👇 CORS allowed for Netlify OR any origin
-const io = new Server(server, {
-    cors: {
-        origin: "*", // Use "*" for public, or list specific domains for security
-        methods: ["GET", "POST"]
-    }
+let messages = [];
+
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+  socket.emit('init', messages);
+
+  socket.on('sendMessage', (msg) => {
+    messages.push(msg);
+    io.emit('newMessage', msg);
+  });
 });
 
-app.use(cors()); // Enable CORS for HTTP requests (optional in most cases)
-
-io.on("connection", (socket) => {
-    console.log("New client connected:", socket.id);
-
-    socket.on("sendMessage", (data) => {
-         io.emit("message", msg); // Broadcast to all
-    });
-
-    socket.on("disconnect", () => {
-        console.log("Client disconnected:", socket.id);
-    });
-});
-
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+server.listen(5000, () => console.log('Server running on port 5000'));
